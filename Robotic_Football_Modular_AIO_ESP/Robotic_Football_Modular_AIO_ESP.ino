@@ -83,6 +83,9 @@ int newconnect = 0;
 ps3_cmd_t cmd;
 float exeTime;
 
+// Change name and contoller address for each robot
+char name[4];
+char* macaddress;
 
 // Read battery is analog read pin 35
 
@@ -315,7 +318,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
   String messageTemp;
   String messageInput;
 
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < len; i++) {
     Serial.print((char)payload[i]);
     messageTemp += (char)payload[i];
   }
@@ -323,10 +326,10 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
   if (String(topic) == "esp32/input") {
     //Serial.print("Changing output to ");
 
-    payload = messageTemp[0]; // Maybe change up to pointers to make more efficient?
+    //payload = messageTemp[0]; // Maybe change up to pointers to make more efficient?
     int index = 0;
-    for (int i = 1; i < length; i++) if (messageTemp[i] == '-') index = i + 1;
-    for (int i = index; i < length; i++) messageInput += messageTemp[i];
+    for (int i = 1; i < len; i++) if (messageTemp[i] == '-') index = i + 1;
+    for (int i = index; i < len; i++) messageInput += messageTemp[i];
     
     if(messageTemp == "p"){
       Serial.println("Reprogramming");
@@ -360,9 +363,6 @@ void onMqttPublish(uint16_t packetId) {
   Serial.println(packetId);
 }
 
-// Change name and contoller address for each robot
-char name[4];
-char* macaddress;
 
 const char* robotNames[18] = {"r3",  "r7",  "r9", 
                           "r12", "r16", "r35", 
@@ -688,36 +688,36 @@ void loop() {
     Serial.println(micros() - exeTime);
   #endif
 
-  // Stores the current time
-  now = millis();
+  // // Stores the current time
+  // now = millis();
 
 
-  if (WiFi.status() != WL_CONNECTED) {
-    lastWiFiAttempt = now;
-    //Serial.println("WiFi Disconnected");
-  } 
-  else if (!mqttClient.connected()) {
-    //Serial.println("Trying to connect to MQTT");
-    lastMQTTAttempt = now;
-    //reconnect();
-  } 
-  else if (now  - lastMsg > 200) {
-    lastMsg = now;
+  // // if (WiFi.status() != WL_CONNECTED) {
+  //   lastWiFiAttempt = now;
+  //   //Serial.println("WiFi Disconnected");
+  // } 
+  // else if (!mqttClient.connected()) {
+  //   //Serial.println("Trying to connect to MQTT");
+  //   lastMQTTAttempt = now;
+  //   //reconnect();
+  // } 
+  // else if (now  - lastMsg > 200) {
+  //   lastMsg = now;
 
-    data["robotNumber"] = name;
-    data["batteryLevel"] = "22";
+  //   data["robotNumber"] = name;
+  //   data["batteryLevel"] = "22";
 
-    size_t n = serializeJson(data, buffer);
+  //   size_t n = serializeJson(data, buffer);
 
-    // Print json data to serial port
-    serializeJson(data, Serial);
+  //   // Print json data to serial port
+  //   serializeJson(data, Serial);
 
-    if (mqttClient.publish("esp32/output", 2, false, buffer)) {
-      Serial.print(" Success sending message\n");
-    }
-    else {
-      Serial.print(" Error sending message\n");
-    }
-  }
+  //   if (mqttClient.publish("esp32/output", 2, false, buffer)) {
+  //     Serial.print(" Success sending message\n");
+  //   }
+  //   else {
+  //     Serial.print(" Error sending message\n");
+  //   }
+  // }
 
 }
